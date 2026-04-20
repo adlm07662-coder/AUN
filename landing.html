@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CineAI — Turn Any Idea Into a Cinematic Video</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>">
+<!-- Google Fonts removed: using system Arial -->
+<!-- Google Fonts removed: using system Arial -->
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#030811;
+  --surface:rgba(8,20,45,0.8);
+  --accent:#6c47ff;
+  --accent2:#a855f7;
+  --cyan:#00e5ff;
+  --text:#e8f0ff;
+  --muted:rgba(180,200,240,0.55);
+  --border:rgba(108,71,255,0.25);
+  --glow:rgba(108,71,255,0.35);
+}
+html,body{background:var(--bg);color:var(--text);font-family: Arial, Helvetica, sans-serif;overflow-x:hidden;scroll-behavior:smooth}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-thumb{background:var(--accent);border-radius:2px}
+
+/* ── NAV ── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:999;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 40px;
+  background:rgba(3,8,17,0.85);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid rgba(108,71,255,0.15);
+}
+.nav-logo{font-family: Arial, Helvetica, sans-serif;font-size:22px;font-weight:800;
+  background:linear-gradient(135deg,#a855f7,#6c47ff,#00e5ff);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.nav-cta{
+  padding:10px 24px;
+  background:linear-gradient(135deg,#6c47ff,#a855f7);
+  border:none;border-radius:50px;
+  color:#fff;font-size:14px;font-weight:700;cursor:pointer;
+  transition:all 0.2s;font-family:inherit;text-decoration:none;
+  box-shadow:0 4px 20px rgba(108,71,255,0.4);
+}
+.nav-cta:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(108,71,255,0.6)}
+
+/* ── HERO ── */
+.hero{
+  min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:120px 24px 80px;
+  position:relative;overflow:hidden;
+}
+.hero-bg{
+  position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 0%,rgba(108,71,255,0.18) 0%,transparent 70%),
+    radial-gradient(ellipse 60% 40% at 80% 60%,rgba(168,85,247,0.12) 0%,transparent 60%),
+    radial-gradient(ellipse 50% 50% at 20% 80%,rgba(0,229,255,0.08) 0%,transparent 60%);
+  pointer-events:none;
+}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:6px 16px;
+  background:rgba(108,71,255,0.15);
+  border:1px solid rgba(108,71,255,0.35);
+  border-radius:50px;
+  font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;
+  color:#a78bfa;margin-bottom:28px;
+  animation:fadeUp 0.6s ease both;
+}
+.badge-dot{width:6px;height:6px;border-radius:50%;background:#a78bfa;animation:pulse 2s ease infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(0.8)}}
+h1{
+  font-family: Arial, Helvetica, sans-serif;
+  font-size:clamp(40px,7vw,88px);font-weight:800;line-height:1.05;
+  margin-bottom:24px;
+  animation:fadeUp 0.7s ease both 0.1s;
+}
+h1 span{
+  background:linear-gradient(135deg,#a855f7 0%,#6c47ff 40%,#00e5ff 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.hero-sub{
+  font-size:clamp(16px,2.5vw,22px);color:var(--muted);max-width:600px;
+  line-height:1.6;margin-bottom:40px;
+  animation:fadeUp 0.7s ease both 0.2s;
+}
+.hero-btns{
+  display:flex;gap:14px;flex-wrap:wrap;justify-content:center;
+  animation:fadeUp 0.7s ease both 0.3s;
+}
+.btn-primary{
+  padding:16px 36px;
+  background:linear-gradient(135deg,#6c47ff,#a855f7);
+  border:none;border-radius:50px;
+  color:#fff;font-size:16px;font-weight:700;cursor:pointer;
+  transition:all 0.2s;font-family:inherit;text-decoration:none;display:inline-block;
+  box-shadow:0 8px 32px rgba(108,71,255,0.5);
+}
+.btn-primary:hover{transform:translateY(-3px);box-shadow:0 12px 40px rgba(108,71,255,0.7)}
+.btn-secondary{
+  padding:16px 36px;
+  background:rgba(108,71,255,0.1);
+  border:1px solid rgba(108,71,255,0.4);
+  border-radius:50px;
+  color:var(--text);font-size:16px;font-weight:600;cursor:pointer;
+  transition:all 0.2s;font-family:inherit;text-decoration:none;display:inline-block;
+}
+.btn-secondary:hover{background:rgba(108,71,255,0.2);border-color:rgba(108,71,255,0.7);transform:translateY(-2px)}
+.hero-trust{
+  display:flex;align-items:center;gap:20px;margin-top:40px;flex-wrap:wrap;justify-content:center;
+  animation:fadeUp 0.7s ease both 0.4s;
+}
+.hero-trust span{color:var(--muted);font-size:13px}
+.trust-pill{
+  display:flex;align-items:center;gap:6px;
+  padding:6px 14px;
+  background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:50px;font-size:12px;font-weight:600;
+}
+.trust-pill svg{width:14px;height:14px;fill:currentColor}
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── VIRAL EXAMPLES ── */
+.section{padding:80px 24px;max-width:1200px;margin:0 auto}
+.section-label{
+  display:inline-block;
+  font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;
+  color:#a78bfa;margin-bottom:12px;
+}
+.section-title{
+  font-family: Arial, Helvetica, sans-serif;font-size:clamp(28px,4vw,48px);font-weight:800;
+  margin-bottom:16px;
+}
+.section-sub{color:var(--muted);font-size:16px;max-width:560px;margin-bottom:48px;line-height:1.6}
+
+.examples-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;
+}
+.example-card{
+  position:relative;
+  border-radius:16px;overflow:hidden;
+  background:var(--surface);
+  border:1px solid var(--border);
+  transition:all 0.25s;
+  cursor:pointer;
+}
+.example-card:hover{transform:translateY(-4px);box-shadow:0 20px 60px rgba(108,71,255,0.3);border-color:rgba(108,71,255,0.5)}
+.example-thumb{
+  width:100%;aspect-ratio:16/9;
+  display:flex;align-items:center;justify-content:center;
+  font-size:56px;
+  background:linear-gradient(135deg,var(--start,#1a0d40),var(--end,#0d2060));
+  user-select:none;
+}
+.example-info{padding:16px}
+.example-prompt{font-size:13px;font-weight:600;margin-bottom:8px;line-height:1.4}
+.example-tags{display:flex;gap:6px;flex-wrap:wrap}
+.tag{
+  padding:3px 10px;
+  background:rgba(108,71,255,0.15);
+  border:1px solid rgba(108,71,255,0.3);
+  border-radius:50px;font-size:11px;font-weight:600;color:#a78bfa;
+}
+.example-play{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:52px;height:52px;border-radius:50%;
+  background:rgba(255,255,255,0.15);backdrop-filter:blur(8px);
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;opacity:0;transition:opacity 0.2s;
+}
+.example-card:hover .example-play{opacity:1}
+
+/* ── HOW IT WORKS ── */
+.how-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:24px}
+.step-card{
+  padding:32px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:20px;
+  transition:all 0.25s;
+}
+.step-card:hover{border-color:rgba(108,71,255,0.5);box-shadow:0 8px 40px rgba(108,71,255,0.15)}
+.step-num{
+  width:48px;height:48px;border-radius:14px;
+  background:linear-gradient(135deg,#6c47ff,#a855f7);
+  display:flex;align-items:center;justify-content:center;
+  font-family: Arial, Helvetica, sans-serif;font-size:20px;font-weight:800;
+  margin-bottom:20px;
+}
+.step-title{font-size:18px;font-weight:700;margin-bottom:10px}
+.step-desc{color:var(--muted);font-size:14px;line-height:1.6}
+
+/* ── PROMPTS PACK ── */
+.prompts-showcase{
+  padding:64px 32px;
+  background:rgba(108,71,255,0.06);
+  border:1px solid var(--border);
+  border-radius:24px;
+  margin:0 24px;
+}
+.prompts-grid{
+  display:flex;flex-wrap:wrap;gap:10px;
+  max-height:260px;overflow:hidden;
+  position:relative;
+}
+.prompts-grid::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;height:80px;
+  background:linear-gradient(to top,rgba(3,8,17,0.9),transparent);
+}
+.prompt-chip{
+  padding:8px 16px;
+  background:rgba(108,71,255,0.12);
+  border:1px solid rgba(108,71,255,0.25);
+  border-radius:50px;font-size:13px;
+  color:var(--muted);cursor:pointer;
+  transition:all 0.15s;white-space:nowrap;
+}
+.prompt-chip:hover{background:rgba(108,71,255,0.25);border-color:rgba(108,71,255,0.5);color:var(--text)}
+
+/* ── PRICING ── */
+.pricing-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:24px;
+  max-width:960px;margin:0 auto;
+}
+.price-card{
+  padding:36px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:24px;
+  position:relative;transition:all 0.25s;
+}
+.price-card.popular{
+  border-color:rgba(108,71,255,0.6);
+  background:rgba(108,71,255,0.08);
+  box-shadow:0 0 60px rgba(108,71,255,0.2);
+}
+.popular-badge{
+  position:absolute;top:-14px;left:50%;transform:translateX(-50%);
+  padding:4px 20px;
+  background:linear-gradient(135deg,#6c47ff,#a855f7);
+  border-radius:50px;font-size:12px;font-weight:700;
+  white-space:nowrap;
+}
+.price-name{font-size:14px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;color:#a78bfa;margin-bottom:12px}
+.price-amount{
+  font-family: Arial, Helvetica, sans-serif;font-size:52px;font-weight:800;
+  line-height:1;margin-bottom:4px;
+}
+.price-amount sup{font-size:24px;vertical-align:top;margin-top:12px;margin-right:2px}
+.price-period{color:var(--muted);font-size:14px;margin-bottom:24px}
+.price-features{list-style:none;display:flex;flex-direction:column;gap:12px;margin-bottom:32px}
+.price-features li{
+  display:flex;align-items:center;gap:10px;
+  font-size:14px;color:var(--muted);
+}
+.price-features li::before{
+  content:'✓';
+  width:20px;height:20px;border-radius:50%;
+  background:rgba(108,71,255,0.2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:900;color:#a78bfa;flex-shrink:0;
+}
+.price-btn{
+  width:100%;padding:14px;
+  border-radius:50px;font-size:15px;font-weight:700;cursor:pointer;
+  border:none;font-family:inherit;transition:all 0.2s;
+}
+.price-btn.outline{
+  background:transparent;
+  border:1px solid rgba(108,71,255,0.4);
+  color:var(--text);
+}
+.price-btn.outline:hover{background:rgba(108,71,255,0.15);border-color:rgba(108,71,255,0.7)}
+.price-btn.filled{
+  background:linear-gradient(135deg,#6c47ff,#a855f7);
+  color:#fff;
+  box-shadow:0 6px 24px rgba(108,71,255,0.5);
+}
+.price-btn.filled:hover{transform:translateY(-2px);box-shadow:0 10px 32px rgba(108,71,255,0.7)}
+
+/* ── VIRAL STRATEGY ── */
+.strategy-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:20px}
+.strategy-card{
+  padding:28px;text-align:center;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:20px;transition:all 0.2s;
+}
+.strategy-card:hover{border-color:rgba(108,71,255,0.5);transform:translateY(-2px)}
+.strategy-icon{font-size:36px;margin-bottom:14px}
+.strategy-title{font-size:16px;font-weight:700;margin-bottom:8px}
+.strategy-desc{color:var(--muted);font-size:13px;line-height:1.5}
+
+/* ── CTA BANNER ── */
+.cta-banner{
+  text-align:center;padding:80px 24px;
+  background:linear-gradient(135deg,rgba(108,71,255,0.12) 0%,rgba(168,85,247,0.08) 100%);
+  border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+}
+.cta-banner h2{font-family: Arial, Helvetica, sans-serif;font-size:clamp(28px,5vw,52px);font-weight:800;margin-bottom:16px}
+.cta-banner p{color:var(--muted);font-size:18px;margin-bottom:36px}
+
+/* ── FOOTER ── */
+footer{text-align:center;padding:32px 24px;color:var(--muted);font-size:13px;border-top:1px solid rgba(255,255,255,0.06)}
+footer a{color:var(--muted);text-decoration:none;margin:0 12px}
+footer a:hover{color:var(--text)}
+
+/* ── SCROLL REVEAL ── */
+.reveal{opacity:0;transform:translateY(30px);transition:all 0.7s ease}
+.reveal.visible{opacity:1;transform:none}
+
+/* ── COUNTER ── */
+.counter-row{
+  display:flex;gap:0;flex-wrap:wrap;justify-content:center;
+  border:1px solid var(--border);border-radius:20px;overflow:hidden;
+  max-width:800px;margin:0 auto 64px;
+}
+.counter-item{
+  flex:1;min-width:160px;padding:28px 24px;text-align:center;
+  border-right:1px solid var(--border);
+}
+.counter-item:last-child{border-right:none}
+.counter-num{
+  font-family: Arial, Helvetica, sans-serif;font-size:40px;font-weight:800;
+  background:linear-gradient(135deg,#a855f7,#6c47ff);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.counter-label{color:var(--muted);font-size:13px;margin-top:4px}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">🎬 CineAI</div>
+  <div style="display:flex;gap:12px;align-items:center">
+    <a href="/api/app.html" style="color:var(--muted);text-decoration:none;font-size:14px;font-weight:500">Sign in</a>
+    <a href="/api/app.html" class="nav-cta">Try Free →</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-badge"><span class="badge-dot"></span> 100% AI-Generated · No editing required</div>
+  <h1>Turn Any Idea Into a<br><span>Cinematic Video</span></h1>
+  <p class="hero-sub">Type a prompt. Watch AI generate a stunning cinematic video in seconds. No skills. No software. Just ideas.</p>
+  <div class="hero-btns">
+    <a href="/api/app.html" class="btn-primary">🎬 Generate Your First Video — Free</a>
+    <a href="#examples" class="btn-secondary">See Examples</a>
+  </div>
+  <div class="hero-trust">
+    <div class="trust-pill">AUN Instant results</div>
+    <div class="trust-pill">🆓 3 free videos</div>
+    <div class="trust-pill">🔥 Going viral daily</div>
+    <div class="trust-pill">💳 No credit card needed</div>
+  </div>
+</section>
+
+<!-- COUNTERS -->
+<div style="padding:0 24px 0;max-width:1200px;margin:0 auto" class="reveal">
+  <div class="counter-row">
+    <div class="counter-item"><div class="counter-num">50K+</div><div class="counter-label">Videos Generated</div></div>
+    <div class="counter-item"><div class="counter-num">12K+</div><div class="counter-label">Active Users</div></div>
+    <div class="counter-item"><div class="counter-num">4.8★</div><div class="counter-label">Average Rating</div></div>
+    <div class="counter-item"><div class="counter-num">100+</div><div class="counter-label">Viral Prompts</div></div>
+  </div>
+</div>
+
+<!-- EXAMPLES -->
+<section class="section reveal" id="examples">
+  <div class="section-label">🔥 Viral Examples</div>
+  <h2 class="section-title">Videos people are sharing right now</h2>
+  <p class="section-sub">Every video below was generated with a single text prompt. No editing. No skills. Just imagination.</p>
+
+  <div class="examples-grid">
+    <div class="example-card" onclick="window.location.href='/api/app.html?prompt=Cyberpunk city rain at night, neon reflections'">
+      <div class="example-thumb" style="--start:#0a0020;--end:#001040">🌆</div>
+      <div class="example-play">▶</div>
+      <div class="example-info">
+        <div class="example-prompt">Cyberpunk city rain at night, neon reflections</div>
+        <div class="example-tags"><span class="tag">Cinematic</span><span class="tag">Sci-Fi</span></div>
+      </div>
+    </div>
+    <div class="example-card" onclick="window.location.href='/api/app.html?prompt=A warrior walking through fire, cinematic'">
+      <div class="example-thumb" style="--start:#300800;--end:#601000">🔥</div>
+      <div class="example-play">▶</div>
+      <div class="example-info">
+        <div class="example-prompt">A warrior walking through fire, cinematic slow motion</div>
+        <div class="example-tags"><span class="tag">Action</span><span class="tag">Epic</span></div>
+      </div>
+    </div>
+    <div class="example-card" onclick="window.location.href='/api/app.html?prompt=Dragon flying over mountains at sunset'">
+      <div class="example-thumb" style="--start:#1a1000;--end:#402800">🐉</div>
+      <div class="example-play">▶</div>
+      <div class="example-info">
+        <div class="example-prompt">Dragon flying over mountains at golden hour</div>
+        <div class="example-tags"><span class="tag">Fantasy</span><span class="tag">Epic</span></div>
+      </div>
+    </div>
+    <div class="example-card" onclick="window.location.href='/api/app.html?prompt=Space battle with explosions, cinematic'">
+      <div class="example-thumb" style="--start:#000820;--end:#100030">🚀</div>
+      <div class="example-play">▶</div>
+      <div class="example-info">
+        <div class="example-prompt">Space battle with explosions, sci-fi epic</div>
+        <div class="example-tags"><span class="tag">Sci-Fi</span><span class="tag">Action</span></div>
+      </div>
+    </div>
+    <div class="example-card" onclick="window.location.href='/api/app.html?prompt=Anime fight scene ultra dynamic'">
+      <div class="example-thumb" style="--start:#200030;--end:#040840">AUN</div>
+      <div class="example-play">▶</div>
+      <div class="example-info">
+        <div class="example-prompt">Anime fight scene, ultra dynamic lightning</div>
+        <div class="example-tags"><span class="tag">Anime</span><span class="tag">Action</span></div>
+      </div>
+    </div>
+    <div class="example-card" onclick="window.location.href='/api/app.html?prompt=Horror scene dark forest creature emerging'">
+      <div class="example-thumb" style="--start:#080008;--end:#020820">👻</div>
+      <div class="example-play">▶</div>
+      <div class="example-info">
+        <div class="example-prompt">Horror scene — dark forest creature emerging from fog</div>
+        <div class="example-tags"><span class="tag">Horror</span><span class="tag">Thriller</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section style="padding:80px 24px;background:rgba(108,71,255,0.04);border-top:1px solid var(--border);border-bottom:1px solid var(--border)">
+  <div style="max-width:1200px;margin:0 auto" class="reveal">
+    <div style="text-align:center;margin-bottom:48px">
+      <div class="section-label">AUN Super Simple</div>
+      <h2 class="section-title">How It Works</h2>
+      <p class="section-sub" style="margin:0 auto">Three steps to your cinematic video. No experience needed.</p>
+    </div>
+    <div class="how-grid">
+      <div class="step-card">
+        <div class="step-num">1</div>
+        <div class="step-title">Type Your Idea</div>
+        <div class="step-desc">Describe any scene, story, or moment. Use one of our 100+ viral prompts or write your own. Any idea works.</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">2</div>
+        <div class="step-title">AI Generates It</div>
+        <div class="step-desc">Our AI director writes a story, plans shots, applies cinematic effects, and renders your video automatically.</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">3</div>
+        <div class="step-title">Share & Go Viral</div>
+        <div class="step-desc">Download your video and post on TikTok, Reels, or Shorts. People go crazy when they find out it's AI-made.</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">4</div>
+        <div class="step-title">Keep Creating</div>
+        <div class="step-desc">Regenerate, adjust the style, or try a new prompt. The more you experiment, the more viral your content becomes.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- VIRAL PROMPTS PACK -->
+<section style="padding:80px 24px;max-width:1200px;margin:0 auto" class="reveal">
+  <div style="text-align:center;margin-bottom:48px">
+    <div class="section-label">💡 100+ Viral Prompts</div>
+    <h2 class="section-title">Prompts that go viral every time</h2>
+    <p class="section-sub" style="margin:0 auto">Included free with every account. Click any prompt to try it instantly.</p>
+  </div>
+  <div class="prompts-showcase">
+    <div class="prompts-grid" id="promptsGrid"></div>
+    <div style="text-align:center;margin-top:24px;position:relative;z-index:1">
+      <a href="/api/app.html" class="btn-primary">Access All 100+ Prompts Free →</a>
+    </div>
+  </div>
+</section>
+
+<!-- VIRAL STRATEGY -->
+<section style="padding:80px 24px;background:rgba(0,229,255,0.03);border-top:1px solid var(--border)" class="reveal">
+  <div style="max-width:1200px;margin:0 auto;text-align:center">
+    <div class="section-label">📈 Go Viral</div>
+    <h2 class="section-title" style="margin-bottom:16px">Your growth engine is built in</h2>
+    <p class="section-sub" style="margin:0 auto 48px">Everything you need to build an audience with AI video content.</p>
+    <div class="strategy-grid">
+      <div class="strategy-card">
+        <div class="strategy-icon">🎯</div>
+        <div class="strategy-title">TikTok Hook System</div>
+        <div class="strategy-desc">Prompts designed to stop the scroll. Every video opens with a cinematic hook that keeps viewers watching.</div>
+      </div>
+      <div class="strategy-card">
+        <div class="strategy-icon">🔁</div>
+        <div class="strategy-title">Regenerate & Remix</div>
+        <div class="strategy-desc">Don't like the result? Hit regenerate. Add "cinematic lighting" or "ultra realistic" to level up any prompt.</div>
+      </div>
+      <div class="strategy-card">
+        <div class="strategy-icon">📱</div>
+        <div class="strategy-title">Platform Ready</div>
+        <div class="strategy-desc">Videos optimized for TikTok, Instagram Reels, and YouTube Shorts. Post daily and watch your audience grow.</div>
+      </div>
+      <div class="strategy-card">
+        <div class="strategy-icon">💬</div>
+        <div class="strategy-title">Viral Caption Formula</div>
+        <div class="strategy-desc">"This was made 100% with AI 🤯" — that caption alone drives 10x more engagement and shares.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section style="padding:80px 24px" class="reveal" id="pricing">
+  <div style="text-align:center;margin-bottom:48px">
+    <div class="section-label">💰 Simple Pricing</div>
+    <h2 class="section-title">Start free. Scale when you're viral.</h2>
+    <p class="section-sub" style="margin:0 auto">No subscriptions. Buy credits when you need them.</p>
+  </div>
+  <div class="pricing-grid">
+    <div class="price-card">
+      <div class="price-name">Starter</div>
+      <div class="price-amount"><sup>$</sup>0</div>
+      <div class="price-period">forever free</div>
+      <ul class="price-features">
+        <li>3 video generations</li>
+        <li>All 100+ viral prompts</li>
+        <li>All style options</li>
+        <li>Instant results</li>
+      </ul>
+      <a href="/api/app.html" class="price-btn outline">Start Free →</a>
+    </div>
+    <div class="price-card popular">
+      <div class="popular-badge">Most Popular</div>
+      <div class="price-name">Creator</div>
+      <div class="price-amount"><sup>$</sup>9.99</div>
+      <div class="price-period">50 credits · one-time</div>
+      <ul class="price-features">
+        <li>50 video generations</li>
+        <li>All viral prompts unlocked</li>
+        <li>Priority generation</li>
+        <li>Download in HD</li>
+        <li>All style options</li>
+      </ul>
+      <a href="/api/app.html" class="price-btn filled">Get Started →</a>
+    </div>
+    <div class="price-card">
+      <div class="price-name">Pro</div>
+      <div class="price-amount"><sup>$</sup>16.99</div>
+      <div class="price-period">100 credits · one-time</div>
+      <ul class="price-features">
+        <li>100 video generations</li>
+        <li>Everything in Creator</li>
+        <li>Batch generation</li>
+        <li>Advanced cinematics</li>
+        <li>Early access to features</li>
+      </ul>
+      <a href="/api/app.html" class="price-btn outline">Go Pro →</a>
+    </div>
+  </div>
+</section>
+
+<!-- CTA BANNER -->
+<section class="cta-banner reveal">
+  <h2>Your first video is <span style="background:linear-gradient(135deg,#a855f7,#6c47ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">free</span></h2>
+  <p>Join 12,000+ creators making AI videos that go viral every day</p>
+  <a href="/api/app.html" class="btn-primary" style="font-size:18px;padding:18px 48px">🎬 Create My First Video →</a>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div style="margin-bottom:12px">
+    <a href="#examples">Examples</a>
+    <a href="#pricing">Pricing</a>
+    <a href="/api/app.html">App</a>
+  </div>
+  <div>© 2025 CineAI · Made with AI · <span style="color:#a78bfa">Go viral</span></div>
+</footer>
+
+<script>
+// Viral prompts pack (100+)
+const VIRAL_PROMPTS = [
+  "Cyberpunk city rain at night, neon reflections",
+  "A warrior walking through fire cinematic",
+  "Futuristic car chase in neon city",
+  "Anime fight scene ultra dynamic",
+  "Motivational speech cinematic background",
+  "Space battle with explosions",
+  "Dragon flying over mountains",
+  "Horror scene dark forest creature",
+  "Luxury lifestyle cinematic mansion",
+  "AI robot becoming human emotional",
+  "Astronaut floating in deep space",
+  "Ancient temple discovered in jungle",
+  "Epic medieval battle with cavalry",
+  "Time lapse city at night",
+  "Ocean waves crashing cinematic",
+  "Samurai duel at sunset",
+  "Superhero landing in a city",
+  "Deep sea creatures glowing",
+  "Aurora borealis over mountains",
+  "Volcanic eruption cinematic",
+  "Desert storm approaching a lone figure",
+  "Giant mech robot walking through city",
+  "Underwater city civilization",
+  "Phoenix rising from ashes",
+  "Ninja running on rooftops",
+  "Black hole event horizon cinematic",
+  "Futuristic AI laboratory glowing",
+  "Snow storm polar expedition",
+  "Zen garden peaceful meditation",
+  "Rap music video urban cinematic",
+  "Horror clown in abandoned carnival",
+  "Jungle temple with laser beams",
+  "Cyberpunk Tokyo street fight",
+  "Ghost ship sailing through fog",
+  "Viking raid at dawn cinematic",
+  "Solar system formation timelapse",
+  "Emotional reunion in a train station",
+  "Parkour athlete urban rooftop",
+  "Magic spell casting fantasy",
+  "Race car drifting neon city",
+  "Alien invasion cityscape",
+  "Mermaid underwater kingdom",
+  "Dystopian city after apocalypse",
+  "Wizard tower in storm",
+  "Epic boss battle fantasy",
+  "Mountain climber summit cinematic",
+  "City under the sea sci-fi",
+  "Steampunk airship battle",
+  "Frozen tundra lone wolf",
+  "Digital matrix code raining",
+  "Gladiator arena ancient Rome",
+  "Rocket launch at night cinematic",
+  "Lost city of Atlantis",
+  "Werewolf transformation horror",
+  "Drone chase through city",
+  "Neon dance floor electronic music",
+  "Post-apocalyptic survivor walking",
+  "Lightning storm over mountains",
+  "Golden hour beach cinematic",
+  "Hacker typing furious dark room",
+  "Cherry blossom ninja temple",
+  "Cave explorer discovering treasure",
+  "Robot uprising future war",
+  "Pirate ship in storm",
+  "Forest fire survivor escaping",
+  "Desert rally race cinematic",
+  "Butterfly transformation timelapse",
+  "Witch casting ritual in forest",
+  "Futuristic soldier infiltration",
+  "Rainbow waterfall paradise",
+  "Scary mansion horror thriller",
+  "Hot air balloon over mountains",
+  "Skydiving cinematic aerial",
+  "Crystal cave glowing formations",
+  "Sandstorm ancient civilization",
+  "Holographic city future",
+  "Rooftop party penthouse view",
+  "Monk meditation mountain sunrise",
+  "Speeding bullet train night",
+  "Giant wave surfer cinematic",
+  "Prison break thriller cinematic",
+  "Garden of Eden paradise",
+  "Sci-fi teleportation portal",
+  "Combat jet aerial battle",
+  "Storm chaser tornado cinematic",
+  "Snowboarder mountain cinematic",
+  "Desert mirage oasis discovery",
+  "Heist vault cinematic thriller",
+  "Ancient warrior goddess",
+  "Robot love story emotional",
+  "Neon rain cyberpunk alley",
+  "Space colony on Mars",
+  "Sea monster ocean battle",
+  "Forest spirits glowing night",
+  "Time travel portal activation",
+  "Museum heist cinematic thriller",
+  "Giant castle in clouds",
+  "Cyberpunk motorcycle chase rain",
+  "Frozen zombie apocalypse",
+  "Galaxy forming timelapse",
+  "Street racer neon city night",
+  "Epic feast medieval banquet",
+  "Space station rotating earth view",
+];
+
+const grid = document.getElementById('promptsGrid');
+VIRAL_PROMPTS.forEach(p => {
+  const chip = document.createElement('div');
+  chip.className = 'prompt-chip';
+  chip.textContent = p;
+  chip.onclick = () => window.location.href = `/api/app.html?prompt=${encodeURIComponent(p)}`;
+  grid.appendChild(chip);
+});
+
+// Scroll reveal
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.1 });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+
+  <style id="global-layout-fix">
+  /* ============================================================
+     GLOBAL TYPOGRAPHY + SCROLL UPGRADE — Full Site
+     ============================================================ */
+
+  /* 1. UNIFIED FONT — Arial, Helvetica everywhere */
+  *, *::before, *::after {
+    font-family: Arial, Helvetica, sans-serif !important;
+  }
+
+  body {
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 1.5;
+    overflow: hidden !important;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: 600;
+    font-family: Arial, Helvetica, sans-serif !important;
+  }
+
+  button, input, textarea, select, option {
+    font-family: Arial, Helvetica, sans-serif !important;
+    font-size: 15px;
+  }
+
+  /* 2. SCROLLABLE PAGE CONTAINERS */
+  .main-page,
+  .page-content,
+  .section-scroll {
+    height: calc(100vh - 60px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    padding: 16px;
+  }
+
+  /* 3. INNER PANEL SCROLL AREAS — smooth, touch-friendly */
+  [style*="overflow-y:auto"],
+  [style*="overflow-y: auto"],
+  .panel-log,
+  .sag-main,
+  .chat-messages,
+  .ss-content,
+  [class*="-body"],
+  [class*="-content"],
+  [class*="-list"],
+  [class*="-scroll"] {
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    scroll-behavior: smooth !important;
+  }
+
+  /* 4. SECTION PANELS — proper flex column layout */
+  .section-panel {
+    display: none;
+    flex-direction: column;
+  }
+  .section-panel.active {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  /* 5. BETTER SCROLLBAR DESIGN — all scrollable elements */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.22);
+    border-radius: 20px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+
+  /* Sidebar gets a slimmer scrollbar */
+  .sidebar::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  /* 6. LOCK BODY — prevent double scrollbars */
+  html, body {
+    overflow: hidden !important;
+    max-height: 100vh;
+  }
+
+  /* 7. TYPOGRAPHY CLEANUP — consistent hierarchy */
+  p { margin: 0 0 0.5em; }
+  small { font-size: 13px; }
+  code, pre, .code-block {
+    font-family: 'Courier New', Courier, monospace !important;
+  }
+
+  /* 8. PREVENT BROKEN LAYOUT from font changes */
+  .logo-text,
+  [class*="logo"],
+  [class*="brand"] {
+    font-family: Arial, Helvetica, sans-serif !important;
+    font-weight: 700;
+  }
+  </style>
+  
+<style id="site-ui-cleanup-2026">
+html {
+  scroll-behavior: smooth !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: #00eaff rgba(255,255,255,0.05) !important;
+}
+
+html,
+body {
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  max-height: none !important;
+}
+
+body,
+.main,
+main,
+.view.active,
+.section-panel.active,
+.main-page,
+.page-content,
+.section-scroll,
+.chat,
+.chat-messages,
+.sidebar,
+.right-panel,
+.panel,
+.modal,
+.modal-content,
+.drawer,
+[class*="panel"],
+[class*="content"],
+[class*="container"],
+[class*="sidebar"],
+[class*="scroll"],
+[class*="viewport"],
+[style*="overflow-y:auto"],
+[style*="overflow-y: auto"],
+[style*="overflow: auto"],
+[style*="overflow:auto"] {
+  scroll-behavior: smooth !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: #00eaff rgba(255,255,255,0.05) !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+.main,
+.view.active,
+.section-panel.active,
+.main-page,
+.page-content,
+.section-scroll {
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+
+::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  width: 10px !important;
+  height: 10px !important;
+}
+
+::-webkit-scrollbar-track,
+*::-webkit-scrollbar-track {
+  background: rgba(255,255,255,0.05) !important;
+  border-radius: 20px !important;
+}
+
+::-webkit-scrollbar-thumb,
+*::-webkit-scrollbar-thumb {
+  background: #00eaff !important;
+  border-radius: 20px !important;
+  box-shadow: 0 0 10px #00eaff !important;
+  border: 2px solid rgba(2,6,23,0.55) !important;
+  background-clip: padding-box !important;
+}
+
+::-webkit-scrollbar-thumb:hover,
+*::-webkit-scrollbar-thumb:hover {
+  background: #67f6ff !important;
+  box-shadow: 0 0 12px #00eaff !important;
+}
+
+::-webkit-scrollbar-corner,
+*::-webkit-scrollbar-corner {
+  background: rgba(255,255,255,0.05) !important;
+}
+
+button,
+.btn,
+[class*="btn"],
+[class*="-btn"],
+[class*="button"],
+input[type="button"],
+input[type="submit"],
+a.button,
+[role="button"] {
+  min-height: 40px !important;
+  padding: 10px 18px !important;
+  border-radius: 10px !important;
+  font-size: 15px !important;
+  line-height: 1.2 !important;
+  font-weight: 600 !important;
+  background: #0f172a !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+  filter: none !important;
+  animation: none !important;
+  cursor: pointer !important;
+  transition: transform .2s ease, border-color .2s ease, background .2s ease, color .2s ease !important;
+}
+
+button:hover,
+.btn:hover,
+[class*="btn"]:hover,
+[class*="-btn"]:hover,
+[class*="button"]:hover,
+input[type="button"]:hover,
+input[type="submit"]:hover,
+a.button:hover,
+[role="button"]:hover {
+  transform: translateY(-1px) !important;
+  border-color: #00eaff !important;
+  background: #111c33 !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+  filter: none !important;
+}
+
+button:active,
+.btn:active,
+[class*="btn"]:active,
+[class*="-btn"]:active,
+[class*="button"]:active,
+input[type="button"]:active,
+input[type="submit"]:active,
+a.button:active,
+[role="button"]:active {
+  transform: translateY(0) !important;
+}
+
+button:disabled,
+.btn:disabled,
+[class*="btn"]:disabled,
+[class*="-btn"]:disabled,
+[class*="button"]:disabled,
+input[type="button"]:disabled,
+input[type="submit"]:disabled {
+  opacity: .55 !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+  border-color: rgba(255,255,255,0.08) !important;
+}
+
+.generate-btn,
+.vg2-generate-btn,
+.ss-btn-primary,
+.asp-action,
+.primary-btn,
+.action-btn,
+#ab-generate-btn,
+#vg2-t2v-btn,
+#vg2-i2v-btn,
+button[onclick*="generate"],
+button[onclick*="Generate"],
+button[id*="generate"],
+button[id*="Generate"],
+button[class*="generate"],
+button[class*="Generate"] {
+  min-height: 40px !important;
+  padding: 10px 18px !important;
+  border-radius: 10px !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  background: #0f172a !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+  filter: none !important;
+  animation: none !important;
+}
+</style>
+<style id="site-scrollbar-final-2026">
+html {
+  scroll-behavior: smooth !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: #00eaff rgba(255,255,255,0.05) !important;
+}
+
+html,
+body {
+  overflow-x: hidden !important;
+  overflow-y: scroll !important;
+  max-height: none !important;
+  scroll-behavior: smooth !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: #00eaff rgba(255,255,255,0.05) !important;
+}
+
+body,
+.main,
+main,
+.view.active,
+.section-panel.active,
+.main-page,
+.page-content,
+.section-scroll,
+.app,
+.container,
+.dashboard,
+.landing,
+.chat,
+.chat-messages,
+.sidebar,
+.right-panel,
+.panel,
+.modal-content,
+[class*="main"],
+[class*="page"],
+[class*="section"],
+[class*="content"],
+[class*="container"],
+[class*="scroll"],
+[style*="overflow-y:auto"],
+[style*="overflow-y: auto"],
+[style*="overflow: auto"],
+[style*="overflow:auto"] {
+  scroll-behavior: smooth !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: #00eaff rgba(255,255,255,0.05) !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+.main,
+main,
+.view.active,
+.section-panel.active,
+.main-page,
+.page-content,
+.section-scroll,
+.app,
+.container,
+.dashboard,
+.landing,
+[class*="main"],
+[class*="page"],
+[class*="section"] {
+  overflow-y: scroll !important;
+  overflow-x: hidden !important;
+}
+
+::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  width: 10px !important;
+  height: 10px !important;
+}
+
+::-webkit-scrollbar-track,
+*::-webkit-scrollbar-track {
+  background: rgba(255,255,255,0.05) !important;
+  border-radius: 20px !important;
+}
+
+::-webkit-scrollbar-thumb,
+*::-webkit-scrollbar-thumb {
+  background: #00eaff !important;
+  border-radius: 20px !important;
+  box-shadow: 0 0 10px #00eaff !important;
+  border: 2px solid rgba(2,6,23,0.55) !important;
+  background-clip: padding-box !important;
+}
+
+::-webkit-scrollbar-thumb:hover,
+*::-webkit-scrollbar-thumb:hover {
+  background: #67f6ff !important;
+  box-shadow: 0 0 12px #00eaff !important;
+}
+
+::-webkit-scrollbar-corner,
+*::-webkit-scrollbar-corner {
+  background: rgba(255,255,255,0.05) !important;
+}
+</style>
+</body>
+</html>

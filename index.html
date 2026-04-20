@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Three.js Particle Morph System</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      width: 100%;
+      height: 100%;
+      background: transparent !important;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    #tools-page {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background: transparent !important;
+    }
+
+    canvas {
+      display: block;
+      background: transparent !important;
+    }
+
+    hr,
+    .divider,
+    .line,
+    .center-line {
+      display: none !important;
+    }
+
+    .controls {
+      position: fixed;
+      top: 18px;
+      left: 18px;
+      z-index: 10;
+      display: flex;
+      gap: 10px;
+      padding: 10px;
+      border: 0;
+      border-radius: 999px;
+      background: transparent !important;
+      backdrop-filter: blur(12px);
+      box-shadow: none;
+    }
+
+    button {
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 999px;
+      background: transparent !important;
+      color: #fff;
+      cursor: pointer;
+      font-size: 14px;
+      letter-spacing: 0.02em;
+      padding: 10px 16px;
+      transition: background 180ms ease, border-color 180ms ease, transform 180ms ease;
+    }
+
+    button:hover,
+    button.active {
+      background: rgba(255, 255, 255, 0.2);
+      border-color: rgba(255, 255, 255, 0.55);
+      transform: translateY(-1px);
+    }
+
+    .webgl-message {
+      position: fixed;
+      inset: 0;
+      display: none;
+      place-items: center;
+      color: rgba(255, 255, 255, 0.86);
+      padding: 28px;
+      text-align: center;
+      z-index: 5;
+    }
+
+    .webgl-message.show {
+      display: grid;
+    }
+
+    .webgl-message div {
+      max-width: 520px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 24px;
+      background: transparent !important;
+      padding: 28px;
+      line-height: 1.6;
+      box-shadow: none;
+    }
+
+    #fs-btn {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 999;
+      padding: 10px;
+    }
+
+    #fs-btn.hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="tools-page">
+    <div class="controls" aria-label="Particle shape controls">
+      <button type="button" data-shape="sphere">Sphere</button>
+      <button type="button" data-shape="cube">Cube</button>
+      <button type="button" data-shape="torus">Torus</button>
+    </div>
+    <button onclick="openFullscreen()" id="fs-btn" type="button">Enter Fullscreen</button>
+    <div class="webgl-message" id="webglMessage">
+      <div>This particle morph system needs WebGL. Please open it in a browser with WebGL enabled.</div>
+    </div>
+  </div>
+
+  <script type="module">
+    import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
+
+    const ParticleMorphSystem = (() => {
+      const particleCount = 1500;
+      const morphSpeed = 0.05;
+      const mouseRadius = 1.15;
+      const mouseStrength = 0.025;
+      const positions = new Float32Array(particleCount * 3);
+      const targetPositions = new Float32Array(particleCount * 3);
+      const mouse = new THREE.Vector2(999, 999);
+      const raycaster = new THREE.Raycaster();
+      const mouseWorld = new THREE.Vector3();
+      const cameraPlane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
+
+      let scene;
+      let camera;
+      let renderer;
+      let geometry;
+      let particles;
+      let activeShape = "sphere";
+
+      function openFullscreen() {
+        const elem = document.documentElement;
+        const request = elem.requestFullscreen || elem.webkitRequestFullscreen || elem.msRequestFullscreen;
+
+        if (!request) {
+          showFullscreenButton();
+          return;
+        }
+
+        try {
+          const result = request.call(elem);
+
+          if (result && typeof result.catch === "function") {
+            result.catch(showFullscreenButton);
+          } else {
+            hideFullscreenButton();
+          }
+        } catch (error) {
+          showFullscreenButton();
+        }
+      }
+
+      function showFullscreenButton() {
+        document.getElementById("fs-btn").classList.remove("hidden");
+      }
+
+      function hideFullscreenButton() {
+        document.getElementById("fs-btn").classList.add("hidden");
+      }
+
+      function init() {
+        scene = new THREE.Scene();
+        camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
+        camera.position.z = 5;
+
+        try {
+          renderer = new THREE.WebGLRenderer({
+            antialias: true,
+            alpha: true
+          });
+        } catch (error) {
+          showWebGLMessage();
+          return;
+        }
+
+        renderer.setClearColor(0x000000, 0);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.getElementById("tools-page").appendChild(renderer.domElement);
+
+        createParticles();
+        bindEvents();
+        setShape("sphere");
+        animate();
+      }
+
+      function showWebGLMessage() {
+        document.getElementById("webglMessage").classList.add("show");
+      }
+
+      function createParticles() {
+        for (let i = 0; i < particleCount; i++) {
+          const index = i * 3;
+          positions[index] = (Math.random() - 0.5) * 8;
+          positions[index + 1] = (Math.random() - 0.5) * 8;
+          positions[index + 2] = (Math.random() - 0.5) * 8;
+        }
+
+        geometry = new THREE.BufferGeometry();
+        geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+
+        const material = new THREE.PointsMaterial({
+          color: 0xffffff,
+          size: 0.03,
+          sizeAttenuation: true
+        });
+
+        particles = new THREE.Points(geometry, material);
+        scene.add(particles);
+      }
+
+      function generateSphere() {
+        const radius = 1.75;
+
+        for (let i = 0; i < particleCount; i++) {
+          const index = i * 3;
+          const u = Math.random();
+          const v = Math.random();
+          const theta = 2 * Math.PI * u;
+          const phi = Math.acos(2 * v - 1);
+
+          targetPositions[index] = radius * Math.sin(phi) * Math.cos(theta);
+          targetPositions[index + 1] = radius * Math.sin(phi) * Math.sin(theta);
+          targetPositions[index + 2] = radius * Math.cos(phi);
+        }
+      }
+
+      function generateCube() {
+        const size = 2.7;
+        const half = size / 2;
+
+        for (let i = 0; i < particleCount; i++) {
+          const index = i * 3;
+          const face = Math.floor(Math.random() * 6);
+          const a = (Math.random() - 0.5) * size;
+          const b = (Math.random() - 0.5) * size;
+
+          if (face === 0) {
+            targetPositions[index] = half;
+            targetPositions[index + 1] = a;
+            targetPositions[index + 2] = b;
+          } else if (face === 1) {
+            targetPositions[index] = -half;
+            targetPositions[index + 1] = a;
+            targetPositions[index + 2] = b;
+          } else if (face === 2) {
+            targetPositions[index] = a;
+            targetPositions[index + 1] = half;
+            targetPositions[index + 2] = b;
+          } else if (face === 3) {
+            targetPositions[index] = a;
+            targetPositions[index + 1] = -half;
+            targetPositions[index + 2] = b;
+          } else if (face === 4) {
+            targetPositions[index] = a;
+            targetPositions[index + 1] = b;
+            targetPositions[index + 2] = half;
+          } else {
+            targetPositions[index] = a;
+            targetPositions[index + 1] = b;
+            targetPositions[index + 2] = -half;
+          }
+        }
+      }
+
+      function generateTorus() {
+        const majorRadius = 1.25;
+        const tubeRadius = 0.5;
+
+        for (let i = 0; i < particleCount; i++) {
+          const index = i * 3;
+          const u = Math.random() * Math.PI * 2;
+          const v = Math.random() * Math.PI * 2;
+          const ring = majorRadius + tubeRadius * Math.cos(v);
+
+          targetPositions[index] = ring * Math.cos(u);
+          targetPositions[index + 1] = ring * Math.sin(u);
+          targetPositions[index + 2] = tubeRadius * Math.sin(v);
+        }
+      }
+
+      function setShape(shapeName) {
+        if (!shapeName) return;
+        activeShape = shapeName;
+
+        if (shapeName === "sphere") {
+          generateSphere();
+        } else if (shapeName === "cube") {
+          generateCube();
+        } else if (shapeName === "torus") {
+          generateTorus();
+        } else {
+          return;
+        }
+
+        document.querySelectorAll("button[data-shape]").forEach((button) => {
+          button.classList.toggle("active", button.dataset.shape === activeShape);
+        });
+      }
+
+      function updateMouseWorldPosition() {
+        raycaster.setFromCamera(mouse, camera);
+        raycaster.ray.intersectPlane(cameraPlane, mouseWorld);
+      }
+
+      function updateParticles() {
+        updateMouseWorldPosition();
+
+        for (let i = 0; i < particleCount; i++) {
+          const index = i * 3;
+
+          positions[index] += (targetPositions[index] - positions[index]) * morphSpeed;
+          positions[index + 1] += (targetPositions[index + 1] - positions[index + 1]) * morphSpeed;
+          positions[index + 2] += (targetPositions[index + 2] - positions[index + 2]) * morphSpeed;
+
+          const dx = positions[index] - mouseWorld.x;
+          const dy = positions[index + 1] - mouseWorld.y;
+          const dz = positions[index + 2] - mouseWorld.z;
+          const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+
+          if (distance < mouseRadius && distance > 0.0001) {
+            const force = (1 - distance / mouseRadius) * mouseStrength;
+            positions[index] += (dx / distance) * force;
+            positions[index + 1] += (dy / distance) * force;
+            positions[index + 2] += (dz / distance) * force;
+          }
+        }
+
+        geometry.attributes.position.needsUpdate = true;
+      }
+
+      function animate() {
+        requestAnimationFrame(animate);
+        updateParticles();
+        particles.rotation.y += 0.0035;
+        renderer.render(scene, camera);
+      }
+
+      function handleMouseMove(event) {
+        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+      }
+
+      function handleMouseLeave() {
+        mouse.set(999, 999);
+      }
+
+      function handleResize() {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      }
+
+      function bindEvents() {
+        window.addEventListener("mousemove", handleMouseMove);
+        window.addEventListener("mouseleave", handleMouseLeave);
+        window.addEventListener("resize", handleResize);
+        document.addEventListener("fullscreenchange", handleFullscreenChange);
+        document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
+
+        document.querySelectorAll("button[data-shape]").forEach((button) => {
+          button.addEventListener("click", () => setShape(button.dataset.shape));
+        });
+      }
+
+      function handleFullscreenChange() {
+        if (document.fullscreenElement || document.webkitFullscreenElement) {
+          hideFullscreenButton();
+        } else {
+          showFullscreenButton();
+        }
+      }
+
+      return {
+        init,
+        openFullscreen,
+        setShape
+      };
+    })();
+
+    window.openFullscreen = ParticleMorphSystem.openFullscreen;
+    window.setShape = ParticleMorphSystem.setShape;
+    ParticleMorphSystem.init();
+    window.addEventListener("load", () => {
+      ParticleMorphSystem.openFullscreen();
+    });
+  </script>
+<style id="site-ui-cleanup-2026">
+html {
+  scroll-behavior: smooth !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: #00eaff rgba(255,255,255,0.05) !important;
+}
+
+html,
+body {
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  max-height: none !important;
+}
+
+body,
+.main,
+main,
+.view.active,
+.section-panel.active,
+.main-page,
+.page-content,
+.section-scroll,
+.chat,
+.chat-messages,
+.sidebar,
+.right-panel,
+.panel,
+.modal,
+.modal-content,
+.drawer,
+[class*="panel"],
+[class*="content"],
+[class*="container"],
+[class*="sidebar"],
+[class*="scroll"],
+[class*="viewport"],
+[style*="overflow-y:auto"],
+[style*="overflow-y: auto"],
+[style*="overflow: auto"],
+[style*="overflow:auto"] {
+  scroll-behavior: smooth !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: #00eaff rgba(255,255,255,0.05) !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+.main,
+.view.active,
+.section-panel.active,
+.main-page,
+.page-content,
+.section-scroll {
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+
+::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  width: 10px !important;
+  height: 10px !important;
+}
+
+::-webkit-scrollbar-track,
+*::-webkit-scrollbar-track {
+  background: rgba(255,255,255,0.05) !important;
+  border-radius: 20px !important;
+}
+
+::-webkit-scrollbar-thumb,
+*::-webkit-scrollbar-thumb {
+  background: #00eaff !important;
+  border-radius: 20px !important;
+  box-shadow: 0 0 10px #00eaff !important;
+  border: 2px solid rgba(2,6,23,0.55) !important;
+  background-clip: padding-box !important;
+}
+
+::-webkit-scrollbar-thumb:hover,
+*::-webkit-scrollbar-thumb:hover {
+  background: #67f6ff !important;
+  box-shadow: 0 0 12px #00eaff !important;
+}
+
+::-webkit-scrollbar-corner,
+*::-webkit-scrollbar-corner {
+  background: rgba(255,255,255,0.05) !important;
+}
+
+button,
+.btn,
+[class*="btn"],
+[class*="-btn"],
+[class*="button"],
+input[type="button"],
+input[type="submit"],
+a.button,
+[role="button"] {
+  min-height: 40px !important;
+  padding: 10px 18px !important;
+  border-radius: 10px !important;
+  font-size: 15px !important;
+  line-height: 1.2 !important;
+  font-weight: 600 !important;
+  background: #0f172a !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+  filter: none !important;
+  animation: none !important;
+  cursor: pointer !important;
+  transition: transform .2s ease, border-color .2s ease, background .2s ease, color .2s ease !important;
+}
+
+button:hover,
+.btn:hover,
+[class*="btn"]:hover,
+[class*="-btn"]:hover,
+[class*="button"]:hover,
+input[type="button"]:hover,
+input[type="submit"]:hover,
+a.button:hover,
+[role="button"]:hover {
+  transform: translateY(-1px) !important;
+  border-color: #00eaff !important;
+  background: #111c33 !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+  filter: none !important;
+}
+
+button:active,
+.btn:active,
+[class*="btn"]:active,
+[class*="-btn"]:active,
+[class*="button"]:active,
+input[type="button"]:active,
+input[type="submit"]:active,
+a.button:active,
+[role="button"]:active {
+  transform: translateY(0) !important;
+}
+
+button:disabled,
+.btn:disabled,
+[class*="btn"]:disabled,
+[class*="-btn"]:disabled,
+[class*="button"]:disabled,
+input[type="button"]:disabled,
+input[type="submit"]:disabled {
+  opacity: .55 !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+  border-color: rgba(255,255,255,0.08) !important;
+}
+
+.generate-btn,
+.vg2-generate-btn,
+.ss-btn-primary,
+.asp-action,
+.primary-btn,
+.action-btn,
+#ab-generate-btn,
+#vg2-t2v-btn,
+#vg2-i2v-btn,
+button[onclick*="generate"],
+button[onclick*="Generate"],
+button[id*="generate"],
+button[id*="Generate"],
+button[class*="generate"],
+button[class*="Generate"] {
+  min-height: 40px !important;
+  padding: 10px 18px !important;
+  border-radius: 10px !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  background: #0f172a !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+  filter: none !important;
+  animation: none !important;
+}
+</style>
+<style id="site-scrollbar-final-2026">
+html {
+  scroll-behavior: smooth !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: #00eaff rgba(255,255,255,0.05) !important;
+}
+
+html,
+body {
+  overflow-x: hidden !important;
+  overflow-y: scroll !important;
+  max-height: none !important;
+  scroll-behavior: smooth !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: #00eaff rgba(255,255,255,0.05) !important;
+}
+
+body,
+.main,
+main,
+.view.active,
+.section-panel.active,
+.main-page,
+.page-content,
+.section-scroll,
+.app,
+.container,
+.dashboard,
+.landing,
+.chat,
+.chat-messages,
+.sidebar,
+.right-panel,
+.panel,
+.modal-content,
+[class*="main"],
+[class*="page"],
+[class*="section"],
+[class*="content"],
+[class*="container"],
+[class*="scroll"],
+[style*="overflow-y:auto"],
+[style*="overflow-y: auto"],
+[style*="overflow: auto"],
+[style*="overflow:auto"] {
+  scroll-behavior: smooth !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: #00eaff rgba(255,255,255,0.05) !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+.main,
+main,
+.view.active,
+.section-panel.active,
+.main-page,
+.page-content,
+.section-scroll,
+.app,
+.container,
+.dashboard,
+.landing,
+[class*="main"],
+[class*="page"],
+[class*="section"] {
+  overflow-y: scroll !important;
+  overflow-x: hidden !important;
+}
+
+::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  width: 10px !important;
+  height: 10px !important;
+}
+
+::-webkit-scrollbar-track,
+*::-webkit-scrollbar-track {
+  background: rgba(255,255,255,0.05) !important;
+  border-radius: 20px !important;
+}
+
+::-webkit-scrollbar-thumb,
+*::-webkit-scrollbar-thumb {
+  background: #00eaff !important;
+  border-radius: 20px !important;
+  box-shadow: 0 0 10px #00eaff !important;
+  border: 2px solid rgba(2,6,23,0.55) !important;
+  background-clip: padding-box !important;
+}
+
+::-webkit-scrollbar-thumb:hover,
+*::-webkit-scrollbar-thumb:hover {
+  background: #67f6ff !important;
+  box-shadow: 0 0 12px #00eaff !important;
+}
+
+::-webkit-scrollbar-corner,
+*::-webkit-scrollbar-corner {
+  background: rgba(255,255,255,0.05) !important;
+}
+</style>
+</body>
+</html>

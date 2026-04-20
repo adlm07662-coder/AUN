@@ -1,0 +1,236 @@
+html, body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  color: white;
+  font-family: Arial, Helvetica, sans-serif;
+  overflow: hidden;
+}
+
+.app {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+}
+
+.sidebar {
+  width: 220px;
+  background: #020617;
+  padding: 15px;
+  flex-shrink: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.nav-btn {
+  display: block;
+  width: 100%;
+  margin: 8px 0;
+  padding: 10px;
+  background: transparent;
+  border: 1px solid #1e293b;
+  color: white;
+  cursor: pointer;
+  border-radius: 10px;
+}
+
+.nav-btn.active {
+  background: #06b6d4;
+  color: black;
+}
+
+.main {
+  flex: 1;
+  width: 0;
+  min-width: 0;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+
+.view {
+  display: none;
+}
+
+.view.active {
+  display: block;
+}
+
+.chat {
+  height: 70vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.options {
+  display: flex;
+  gap: 10px;
+  margin: 10px 0;
+}
+
+button {
+  padding: 10px;
+  border: none;
+  cursor: pointer;
+  border-radius: 10px;
+  background: #06b6d4;
+}
+
+.right-panel {
+  width: 250px;
+  background: #020617;
+  padding: 15px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.input-bar {
+  position: fixed;
+  bottom: 0;
+  left: 220px;
+  right: 0;
+  display: flex;
+  padding: 10px;
+  background: #020617;
+}
+
+.hidden {
+  display: none;
+}
+
+.fullscreen-panel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 999;
+}
+
+/* ── Scrollbar styling (applied only where overflow is actually set) ── */
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255,255,255,0.04);
+  border-radius: 20px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #00eaff;
+  border-radius: 20px;
+  box-shadow: 0 0 8px #00eaff;
+  border: 1px solid rgba(2,6,23,0.55);
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #67f6ff;
+  box-shadow: 0 0 10px #00eaff;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+.topbar-logo {
+  text-decoration: none;
+}
+
+/* HOLOGRAM TEXT BASE */
+.topbar-logo-icon {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 5px;
+
+  color: #00e5ff;
+
+  position: relative;
+  display: inline-block;
+
+  text-shadow:
+    0 0 6px rgba(0, 229, 255, 0.7),
+    0 0 18px rgba(0, 229, 255, 0.4),
+    0 0 30px rgba(0, 229, 255, 0.2);
+
+  animation: holoFlicker 3s infinite ease-in-out;
+  overflow: hidden;
+}
+
+/* SCAN LINE EFFECT */
+.topbar-logo-icon::after {
+  content: "";
+
+  position: absolute;
+  top: -20%;
+  left: -60%;
+  width: 60%;
+  height: 140%;
+
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(0, 229, 255, 0.25),
+    transparent
+  );
+
+  transform: skewX(-20deg);
+  animation: scanLine 2.8s infinite;
+}
+
+/* SCAN MOVEMENT */
+@keyframes scanLine {
+  0% {
+    left: -60%;
+  }
+  100% {
+    left: 140%;
+  }
+}
+
+/* HOLOGRAM FLICKER */
+@keyframes holoFlicker {
+  0%, 100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  45% {
+    opacity: 0.9;
+  }
+  50% {
+    opacity: 0.7;
+    transform: translateY(-1px);
+  }
+  55% {
+    opacity: 1;
+  }
+}
+/* Container for the logo to create the clipping effect */
+.logo-container {
+  position: relative;
+  display: inline-block;
+  overflow: hidden; /* Keeps the scan-line within the logo bounds */
+}
+
+/* The Scan-line effect */
+.logo-container::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 2px;
+  background: rgba(0, 234, 255, 0.8); /* Cyan color to match your theme */
+  box-shadow: 0 0 10px #00eaff;
+  animation: scanline 2s linear infinite;
+  pointer-events: none; /* Ignore clicks */
+}
+
+@keyframes scanline {
+  0% { top: 0%; }
+  100% { top: 100%; }
+}

@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Studio PRO</title>
+<link rel="icon" href="data:,">
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    color: white;
+    background: radial-gradient(circle at top, #0a0f2c, #020617);
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+.bg {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+}
+
+.circle {
+    position: absolute;
+    width: 200px;
+    height: 200px;
+    background: rgba(56, 189, 248, 0.1);
+    border-radius: 50%;
+    filter: blur(80px);
+    animation: float 12s infinite linear;
+}
+
+@keyframes float {
+    from { transform: translateY(0); }
+    to { transform: translateY(-1000px); }
+}
+
+.navbar {
+    position: fixed;
+    top: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 92%;
+    max-width: 1200px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background: rgba(173, 216, 230, 0.02);
+    -webkit-backdrop-filter: blur(25px);
+    backdrop-filter: blur(25px);
+    border-radius: 18px;
+    border: 1px solid rgba(173, 216, 230, 0.2);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    z-index: 10;
+}
+
+.logo {
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    color: #e0f2fe;
+    white-space: nowrap;
+}
+
+.nav-right {
+    display: flex;
+    gap: 10px;
+}
+
+.nav-btn {
+    position: relative;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 12px;
+    background: transparent;
+    color: #cfe9ff;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.nav-btn:hover {
+    background: rgba(173, 216, 230, 0.1);
+    box-shadow: 0 0 12px rgba(173, 216, 230, 0.5);
+}
+
+.nav-btn.active::after {
+    content: "";
+    position: absolute;
+    bottom: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60%;
+    height: 3px;
+    border-radius: 5px;
+    background: linear-gradient(90deg, #38bdf8, #60a5fa);
+}
+
+.main {
+    padding: 120px 20px 40px;
+    max-width: 950px;
+    margin: auto;
+}
+
+.user-status {
+    color: #bfdbfe;
+    opacity: 0.78;
+    margin: 0 0 18px;
+    font-size: 14px;
+}
+
+.section {
+    display: none;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: 0.4s ease;
+}
+
+.active-section {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+textarea,
+input {
+    width: 100%;
+    padding: 14px;
+    margin: 12px 0;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    font: inherit;
+}
+
+textarea {
+    min-height: 130px;
+    resize: vertical;
+}
+
+textarea::placeholder,
+input::placeholder {
+    color: rgba(219, 234, 254, 0.45);
+}
+
+button.action {
+    padding: 14px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    color: white;
+    font-weight: 700;
+    background: linear-gradient(135deg, #38bdf8, #60a5fa);
+    box-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
+    transition: 0.3s;
+}
+
+button.action:hover {
+    transform: scale(1.04);
+    box-shadow: 0 0 30px rgba(56, 189, 248, 0.7);
+}
+
+button.action:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: 0 0 12px rgba(56, 189, 248, 0.25);
+}
+
+.loader {
+    margin-top: 20px;
+    display: none;
+}
+
+.loader span {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    margin: 0 3px;
+    background: #60a5fa;
+    border-radius: 50%;
+    animation: bounce 1s infinite;
+}
+
+.loader span:nth-child(2) { animation-delay: 0.2s; }
+.loader span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+video,
+img {
+    width: 100%;
+    margin-top: 20px;
+    border-radius: 14px;
+    box-shadow: 0 0 25px rgba(0, 0, 0, 0.6);
+    background: rgba(255, 255, 255, 0.04);
+}
+
+img:not([src]),
+video:not([src]) {
+    display: none;
+}
+
+.status-box,
+.output-box {
+    margin-top: 18px;
+    padding: 14px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    color: #dbeafe;
+    white-space: pre-wrap;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.status-box:empty,
+.output-box:empty {
+    display: none;
+}
+
+@media (max-width: 560px) {
+    .navbar {
+        width: calc(100% - 24px);
+        padding: 10px 12px;
+    }
+
+    .logo {
+        font-size: 25px;
+        letter-spacing: 0;
+    }
+
+    .nav-right {
+        gap: 6px;
+    }
+
+    .nav-btn {
+        padding: 8px 10px;
+    }
+
+    .main {
+        padding-top: 105px;
+    }
+}
+</style>
+</head>
+<body>
+<div class="bg">
+    <div class="circle" style="left:10%; top:80%;"></div>
+    <div class="circle" style="left:70%; top:90%;"></div>
+</div>
+<div class="navbar">
+    <div class="logo-container">
+  ((AUN))
+</div>
+    <div class="nav-right">
+        <button class="nav-btn active" data-tab="image" onclick="show('image', this)">🖼</button>
+        <button class="nav-btn" data-tab="video" onclick="show('video', this)">🎬</button>
+        <button class="nav-btn" data-tab="script" onclick="show('script', this)">📝</button>
+        <button class="nav-btn" data-tab="settings" onclick="show('settings', this)">⚙️</button>
+    </div>
+</div>
+<div class="main">
+    <p id="userLabel" class="user-status">Not signed in</p>
+    <div id="image" class="section active-section">
+        <h2>Image Generator</h2>
+        <textarea id="imagePrompt" placeholder="Describe your image..."></textarea>
+        <button id="imageButton" class="action" onclick="generateImage()">Generate</button>
+        <div class="loader" id="imgLoader"><span></span><span></span><span></span></div>
+        <div id="imageStatus" class="status-box"></div>
+        <img id="imageOutput" alt="Generated image output">
+    </div>
+    <div id="video" class="section">
+        <h2>Video Generator</h2>
+        <textarea id="videoPrompt" placeholder="Describe your video..."></textarea>
+        <button id="videoButton" class="action" onclick="generateVideo()">Generate</button>
+        <div class="loader" id="vidLoader"><span></span><span></span><span></span></div>
+        <div id="videoStatus" class="status-box"></div>
+        <video id="videoPlayer" controls></video>
+    </div>
+    <div id="script" class="section">
+        <h2>Script Generator</h2>
+        <textarea id="scriptPrompt" placeholder="Enter topic..."></textarea>
+        <button id="scriptButton" class="action" onclick="generateScript()">Generate</button>
+        <div class="loader" id="scriptLoader"><span></span><span></span><span></span></div>
+        <div id="scriptOutput" class="output-box"></div>
+    </div>
+    <div id="settings" class="section">
+        <h2>Settings</h2>
+        <input id="username" placeholder="Username" autocomplete="name">
+        <button class="action" onclick="login()">Login</button>
+        <div id="status" class="status-box"></div>
+    </div>
+</div>
+<script>
+const API = "/api";
+let currentUser = localStorage.getItem("aiStudioUser") || "";
+let navigationTimer = null;
+
+if (currentUser) {
+    document.getElementById("userLabel").innerText = "Signed in as " + currentUser;
+    document.getElementById("username").value = currentUser;
+}
+
+const params = new URLSearchParams(window.location.search);
+const promptFromUrl = params.get("prompt");
+if (promptFromUrl) {
+    document.getElementById("videoPrompt").value = promptFromUrl;
+    show("video");
+}
+
+function setLoader(id, isVisible) {
+    document.getElementById(id).style.display = isVisible ? "block" : "none";
+}
+
+async function readJsonResponse(res, fallbackMessage) {
+    let data = {};
+    try {
+        data = await res.json();
+    } catch {
+        data = {};
+    }
+
+    if (!res.ok) {
+        throw new Error(data.error || data.message || fallbackMessage);
+    }
+
+    return data;
+}
+
+function show(section, btn) {
+    if (navigationTimer) {
+        clearTimeout(navigationTimer);
+    }
+    document.querySelectorAll(".section").forEach(s => s.classList.remove("active-section"));
+    navigationTimer = setTimeout(() => {
+        const target = document.getElementById(section);
+        if (target) {
+            target.classList.add("active-section");
+        }
+    }, 50);
+    document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
+    const activeButton = btn || document.querySelector(`[data-tab="${section}"]`);
+    if (activeButton) {
+        activeButton.classList.add("active");
+    }
+}
+
+async function login() {
+    currentUser = document.getElementById("username").value.trim();
+    if (!currentUser) {
+        document.getElementById("status").innerText = "Enter a username first.";
+        return;
+    }
+
+    try {
+        const res = await fetch(API + "/sessions", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name: currentUser })
+        });
+
+        await readJsonResponse(res, "Login failed. Try again.");
+
+        localStorage.setItem("aiStudioUser", currentUser);
+        document.getElementById("userLabel").innerText = "Signed in as " + currentUser;
+        document.getElementById("status").innerText = "Logged in.";
+    } catch (err) {
+        document.getElementById("status").innerText = "Login failed: " + (err && err.message ? err.message : "Unknown error");
+    }
+}
+
+async function generateImage() {
+    const prompt = document.getElementById("imagePrompt").value.trim();
+    const status = document.getElementById("imageStatus");
+    const button = document.getElementById("imageButton");
+    const output = document.getElementById("imageOutput");
+
+    if (!prompt) {
+        status.innerText = "Enter an image idea first.";
+        return;
+    }
+
+    button.disabled = true;
+    status.innerText = "Generating image...";
+    output.removeAttribute("src");
+    setLoader("imgLoader", true);
+
+    try {
+        const res = await fetch(API + "/generate-image", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ prompt, model: "turbo", width: 1024, height: 1024 })
+        });
+        const data = await readJsonResponse(res, "Image request failed.");
+        if (data.error) {
+            status.innerText = data.error;
+            return;
+        }
+        const imageUrl = data.url || data.dataUri || (Array.isArray(data.urls) ? data.urls[0] : "");
+        if (!imageUrl) {
+            status.innerText = "Image generated, but no image URL was returned.";
+            return;
+        }
+        output.src = imageUrl;
+        status.innerText = "Image generated.";
+    } catch (err) {
+        status.innerText = "Image request failed: " + (err && err.message ? err.message : "Unknown error");
+    } finally {
+        setLoader("imgLoader", false);
+        button.disabled = false;
+    }
+}
+
+async function generateVideo() {
+    const prompt = document.getElementById("videoPrompt").value.trim();
+    const status = document.getElementById("videoStatus");
+    const button = document.getElementById("videoButton");
+    const player = document.getElementById("videoPlayer");
+
+    if (!prompt) {
+        status.innerText = "Enter a video idea first.";
+        return;
+    }
+
+    button.disabled = true;
+    player.removeAttribute("src");
+    status.innerText = "Starting video generation...";
+    setLoader("vidLoader", true);
+
+    try {
+        const res = await fetch(API + "/generate-video", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username: currentUser || "guest", prompt, duration: 5, style: "cinematic" })
+        });
+        const data = await readJsonResponse(res, "Video request failed.");
+        if (data.error) {
+            status.innerText = data.error;
+            return;
+        }
+        if (!data.jobId) {
+            status.innerText = "Video started, but no job ID was returned.";
+            return;
+        }
+        status.innerText = data.message || "Video job started.";
+        await pollVideo(data.jobId);
+    } catch (err) {
+        status.innerText = "Video request failed: " + (err && err.message ? err.message : "Unknown error");
+    } finally {
+        setLoader("vidLoader", false);
+        button.disabled = false;
+    }
+}
+
+async function pollVideo(jobId) {
+    const status = document.getElementById("videoStatus");
+    const player = document.getElementById("videoPlayer");
+
+    for (let i = 0; i < 90; i++) {
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        const res = await fetch(API + "/video-status/" + encodeURIComponent(jobId));
+        const data = await readJsonResponse(res, "Could not check video status.");
+
+        if (data.status === "completed") {
+            status.innerText = "Video complete.";
+            if (data.videoUrl || data.downloadUrl) {
+                player.src = data.videoUrl || data.downloadUrl;
+                player.load();
+            }
+            return;
+        }
+
+        if (data.status === "failed") {
+            status.innerText = data.error || "Video generation failed.";
+            return;
+        }
+
+        status.innerText = "Video status: " + (data.stage || "processing") + " " + (data.pct || 0) + "%";
+    }
+
+    status.innerText = "Video is still processing. Check again shortly.";
+}
+
+async function generateScript() {
+    const prompt = document.getElementById("scriptPrompt").value.trim();
+    const output = document.getElementById("scriptOutput");
+    const button = document.getElementById("scriptButton");
+
+    if (!prompt) {
+        output.innerText = "Enter a topic first.";
+        return;
+    }
+
+    button.disabled = true;
+    output.innerText = "Generating script...";
+    setLoader("scriptLoader", true);
+
+    try {
+        const res = await fetch(API + "/generate-script", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ prompt, format: "youtube", tone: "engaging", duration: "3 minutes" })
+        });
+        const data = await readJsonResponse(res, "Script request failed.");
+        output.innerText = data.error || data.script || "No script returned.";
+    } catch (err) {
+        output.innerText = "Script request failed: " + (err && err.message ? err.message : "Unknown error");
+    } finally {
+        setLoader("scriptLoader", false);
+        button.disabled = false;
+    }
+}
+</script>
+
+  <style id="global-layout-fix">
+  /* ============================================================
+     GLOBAL TYPOGRAPHY + SCROLL UPGRADE — Full Site
+     ============================================================ */
+
+  /* 1. UNIFIED FONT — Arial, Helvetica everywhere */
+  *, *::before, *::after {
+    font-family: Arial, Helvetica, sans-serif !important;
+  }
+
+  body {
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 1.5;
+    overflow: hidden !important;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: 600;
+    font-family: Arial, Helvetica, sans-serif !important;
+  }
+
+  button, input, textarea, select, option {
+    font-family: Arial, Helvetica, sans-serif !important;
+    font-size: 15px;
+  }
+
+  /* 2. SCROLLABLE PAGE CONTAINERS */
+  .main-page,
+  .page-content,
+  .section-scroll {
+    height: calc(100vh - 60px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    padding: 16px;
+  }
+
+  /* 3. INNER PANEL SCROLL AREAS — smooth, touch-friendly */
+  [style*="overflow-y:auto"],
+  [style*="overflow-y: auto"],
+  .panel-log,
+  .sag-main,
+  .chat-messages,
+  .ss-content,
+  [class*="-body"],
+  [class*="-content"],
+  [class*="-list"],
+  [class*="-scroll"] {
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    scroll-behavior: smooth !important;
+  }
+
+  /* 4. SECTION PANELS — proper flex column layout */
+  .section-panel {
+    display: none;
+    flex-direction: column;
+  }
+  .section-panel.active {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  /* 5. BETTER SCROLLBAR DESIGN — all scrollable elements */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.22);
+    border-radius: 20px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+
+  /* Sidebar gets a slimmer scrollbar */
+  .sidebar::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  /* 6. LOCK BODY — prevent double scrollbars */
+  html, body {
+    overflow: hidden !important;
+    max-height: 100vh;
+  }
+
+  /* 7. TYPOGRAPHY CLEANUP — consistent hierarchy */
+  p { margin: 0 0 0.5em; }
+  small { font-size: 13px; }
+  code, pre, .code-block {
+    font-family: 'Courier New', Courier, monospace !important;
+  }
+
+  /* 8. PREVENT BROKEN LAYOUT from font changes */
+  .logo-text,
+  [class*="logo"],
+  [class*="brand"] {
+    font-family: Arial, Helvetica, sans-serif !important;
+    font-weight: 700;
+  }
+  </style>
+  
+<style id="site-ui-cleanup-2026">
+html {
+  scroll-behavior: smooth !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: #00eaff rgba(255,255,255,0.05) !important;
+}
+
+html,
+body {
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  max-height: none !important;
+}
+
+body,
+.main,
+main,
+.view.active,
+.section-panel.active,
+.main-page,
+.page-content,
+.section-scroll,
+.chat,
+.chat-messages,
+.sidebar,
+.right-panel,
+.panel,
+.modal,
+.modal-content,
+.drawer,
+[class*="panel"],
+[class*="content"],
+[class*="container"],
+[class*="sidebar"],
+[class*="scroll"],
+[class*="viewport"],
+[style*="overflow-y:auto"],
+[style*="overflow-y: auto"],
+[style*="overflow: auto"],
+[style*="overflow:auto"] {
+  scroll-behavior: smooth !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: #00eaff rgba(255,255,255,0.05) !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+.main,
+.view.active,
+.section-panel.active,
+.main-page,
+.page-content,
+.section-scroll {
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+
+::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  width: 10px !important;
+  height: 10px !important;
+}
+
+::-webkit-scrollbar-track,
+*::-webkit-scrollbar-track {
+  background: rgba(255,255,255,0.05) !important;
+  border-radius: 20px !important;
+}
+
+::-webkit-scrollbar-thumb,
+*::-webkit-scrollbar-thumb {
+  background: #00eaff !important;
+  border-radius: 20px !important;
+  box-shadow: 0 0 10px #00eaff !important;
+  border: 2px solid rgba(2,6,23,0.55) !important;
+  background-clip: padding-box !important;
+}
+
+::-webkit-scrollbar-thumb:hover,
+*::-webkit-scrollbar-thumb:hover {
+  background: #67f6ff !important;
+  box-shadow: 0 0 12px #00eaff !important;
+}
+
+::-webkit-scrollbar-corner,
+*::-webkit-scrollbar-corner {
+  background: rgba(255,255,255,0.05) !important;
+}
+
+button,
+.btn,
+[class*="btn"],
+[class*="-btn"],
+[class*="button"],
+input[type="button"],
+input[type="submit"],
+a.button,
+[role="button"] {
+  min-height: 40px !important;
+  padding: 10px 18px !important;
+  border-radius: 10px !important;
+  font-size: 15px !important;
+  line-height: 1.2 !important;
+  font-weight: 600 !important;
+  background: #0f172a !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+  filter: none !important;
+  animation: none !important;
+  cursor: pointer !important;
+  transition: transform .2s ease, border-color .2s ease, background .2s ease, color .2s ease !important;
+}
+
+button:hover,
+.btn:hover,
+[class*="btn"]:hover,
+[class*="-btn"]:hover,
+[class*="button"]:hover,
+input[type="button"]:hover,
+input[type="submit"]:hover,
+a.button:hover,
+[role="button"]:hover {
+  transform: translateY(-1px) !important;
+  border-color: #00eaff !important;
+  background: #111c33 !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+  filter: none !important;
+}
+
+button:active,
+.btn:active,
+[class*="btn"]:active,
+[class*="-btn"]:active,
+[class*="button"]:active,
+input[type="button"]:active,
+input[type="submit"]:active,
+a.button:active,
+[role="button"]:active {
+  transform: translateY(0) !important;
+}
+
+button:disabled,
+.btn:disabled,
+[class*="btn"]:disabled,
+[class*="-btn"]:disabled,
+[class*="button"]:disabled,
+input[type="button"]:disabled,
+input[type="submit"]:disabled {
+  opacity: .55 !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+  border-color: rgba(255,255,255,0.08) !important;
+}
+
+.generate-btn,
+.vg2-generate-btn,
+.ss-btn-primary,
+.asp-action,
+.primary-btn,
+.action-btn,
+#ab-generate-btn,
+#vg2-t2v-btn,
+#vg2-i2v-btn,
+button[onclick*="generate"],
+button[onclick*="Generate"],
+button[id*="generate"],
+button[id*="Generate"],
+button[class*="generate"],
+button[class*="Generate"] {
+  min-height: 40px !important;
+  padding: 10px 18px !important;
+  border-radius: 10px !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  background: #0f172a !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+  filter: none !important;
+  animation: none !important;
+}
+</style>
+<style id="site-scrollbar-final-2026">
+html {
+  scroll-behavior: smooth !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: #00eaff rgba(255,255,255,0.05) !important;
+}
+
+html,
+body {
+  overflow-x: hidden !important;
+  overflow-y: scroll !important;
+  max-height: none !important;
+  scroll-behavior: smooth !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: #00eaff rgba(255,255,255,0.05) !important;
+}
+
+body,
+.main,
+main,
+.view.active,
+.section-panel.active,
+.main-page,
+.page-content,
+.section-scroll,
+.app,
+.container,
+.dashboard,
+.landing,
+.chat,
+.chat-messages,
+.sidebar,
+.right-panel,
+.panel,
+.modal-content,
+[class*="main"],
+[class*="page"],
+[class*="section"],
+[class*="content"],
+[class*="container"],
+[class*="scroll"],
+[style*="overflow-y:auto"],
+[style*="overflow-y: auto"],
+[style*="overflow: auto"],
+[style*="overflow:auto"] {
+  scroll-behavior: smooth !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: #00eaff rgba(255,255,255,0.05) !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+.main,
+main,
+.view.active,
+.section-panel.active,
+.main-page,
+.page-content,
+.section-scroll,
+.app,
+.container,
+.dashboard,
+.landing,
+[class*="main"],
+[class*="page"],
+[class*="section"] {
+  overflow-y: scroll !important;
+  overflow-x: hidden !important;
+}
+
+::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  width: 10px !important;
+  height: 10px !important;
+}
+
+::-webkit-scrollbar-track,
+*::-webkit-scrollbar-track {
+  background: rgba(255,255,255,0.05) !important;
+  border-radius: 20px !important;
+}
+
+::-webkit-scrollbar-thumb,
+*::-webkit-scrollbar-thumb {
+  background: #00eaff !important;
+  border-radius: 20px !important;
+  box-shadow: 0 0 10px #00eaff !important;
+  border: 2px solid rgba(2,6,23,0.55) !important;
+  background-clip: padding-box !important;
+}
+
+::-webkit-scrollbar-thumb:hover,
+*::-webkit-scrollbar-thumb:hover {
+  background: #67f6ff !important;
+  box-shadow: 0 0 12px #00eaff !important;
+}
+
+::-webkit-scrollbar-corner,
+*::-webkit-scrollbar-corner {
+  background: rgba(255,255,255,0.05) !important;
+}
+</style>
+</body>
+</html>
